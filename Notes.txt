@@ -1,3 +1,51 @@
 IA-32 Architecture:
 
 https://i.imgur.com/Mr9pvq9.jpg
+
+gdb /bin/bash
+GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "i686-linux-gnu".
+For bug reporting instructions, please see:
+<http://bugs.launchpad.net/gdb-linaro/>...
+Reading symbols from /bin/bash...(no debugging symbols found)...done.
+(gdb) break main
+Breakpoint 1 at 0x805eba6
+(gdb) run 
+Starting program: /bin/bash 
+
+Breakpoint 1, 0x0805eba6 in main ()
+(gdb) info registers
+eax            0x1	1
+ecx            0xbffff774	-1073744012
+edx            0xbffff704	-1073744124
+ebx            0xb7fa1ff4	-1208344588
+esp            0xbffff6cc	0xbffff6cc
+ebp            0xbffff6d8	0xbffff6d8
+esi            0x0	0
+edi            0x0	0
+eip            0x805eba6	0x805eba6 <main+6>
+eflags         0x246	[ PF ZF IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x33	51
+(gdb) display /x $eax
+1: /x $eax = 0x1
+(gdb) display /x $ax
+2: /x $ax = 0x1
+(gdb) display /x $ecx
+3: /x $ecx = 0xbffff774
+(gdb) display /x $cx
+4: /x $cx = 0xf774
+(gdb) display /x $ch
+5: /x $ch = 0xf7
+(gdb) display /x $cl
+6: /x $cl = 0x74
+
