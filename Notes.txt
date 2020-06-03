@@ -143,3 +143,52 @@ Dump of assembler code for function main:
 
 CPU Modes and Memory Management:
 
+cat /proc/pid/maps
+pmap -d pid
+gdb /bin/bash
+GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "i686-linux-gnu".
+For bug reporting instructions, please see:
+<http://bugs.launchpad.net/gdb-linaro/>...
+Reading symbols from /bin/bash...(no debugging symbols found)...done.
+(gdb) info proc mappings
+No current process: you must name one.
+(gdb) break main
+Breakpoint 1 at 0x805eba6
+(gdb) run
+Starting program: /bin/bash 
+
+Breakpoint 1, 0x0805eba6 in main ()
+(gdb) info proc mappings
+process 6099
+Mapped address spaces:
+
+	Start Addr   End Addr       Size     Offset objfile
+	 0x8048000  0x8124000    0xdc000        0x0 /bin/bash
+	 0x8124000  0x8125000     0x1000    0xdb000 /bin/bash
+	 0x8125000  0x812a000     0x5000    0xdc000 /bin/bash
+	 0x812a000  0x812f000     0x5000        0x0 [heap]
+	0xb7dfa000 0xb7dfb000     0x1000        0x0 
+	0xb7dfb000 0xb7f9f000   0x1a4000        0x0 /lib/i386-linux-gnu/libc-2.15.so
+	0xb7f9f000 0xb7fa0000     0x1000   0x1a4000 /lib/i386-linux-gnu/libc-2.15.so
+	0xb7fa0000 0xb7fa2000     0x2000   0x1a4000 /lib/i386-linux-gnu/libc-2.15.so
+	0xb7fa2000 0xb7fa3000     0x1000   0x1a6000 /lib/i386-linux-gnu/libc-2.15.so
+	0xb7fa3000 0xb7fa7000     0x4000        0x0 
+	0xb7fa7000 0xb7faa000     0x3000        0x0 /lib/i386-linux-gnu/libdl-2.15.so
+	0xb7faa000 0xb7fab000     0x1000     0x2000 /lib/i386-linux-gnu/libdl-2.15.so
+	0xb7fab000 0xb7fac000     0x1000     0x3000 /lib/i386-linux-gnu/libdl-2.15.so
+	0xb7fac000 0xb7fc8000    0x1c000        0x0 /lib/i386-linux-gnu/libtinfo.so.5.9
+	0xb7fc8000 0xb7fca000     0x2000    0x1b000 /lib/i386-linux-gnu/libtinfo.so.5.9
+	0xb7fca000 0xb7fcb000     0x1000    0x1d000 /lib/i386-linux-gnu/libtinfo.so.5.9
+	0xb7fdb000 0xb7fdd000     0x2000        0x0 
+	0xb7fdd000 0xb7fde000     0x1000        0x0 [vdso]
+	0xb7fde000 0xb7ffe000    0x20000        0x0 /lib/i386-linux-gnu/ld-2.15.so
+	0xb7ffe000 0xb7fff000     0x1000    0x1f000 /lib/i386-linux-gnu/ld-2.15.so
+	0xb7fff000 0xb8000000     0x1000    0x20000 /lib/i386-linux-gnu/ld-2.15.so
+	0xbffdf000 0xc0000000    0x21000        0x0 [stack]
+
