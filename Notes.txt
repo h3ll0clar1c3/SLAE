@@ -192,3 +192,5 @@ Mapped address spaces:
 	0xb7fff000 0xb8000000     0x1000    0x20000 /lib/i386-linux-gnu/ld-2.15.so
 	0xbffdf000 0xc0000000    0x21000        0x0 [stack]
 
+Video 8 - Hello World:
+
