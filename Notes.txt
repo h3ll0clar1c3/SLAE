@@ -192,7 +192,7 @@ Mapped address spaces:
 	0xb7fff000 0xb8000000     0x1000    0x20000 /lib/i386-linux-gnu/ld-2.15.so
 	0xbffdf000 0xc0000000    0x21000        0x0 [stack]
 
-Video 8 - Hello World:
+Hello World:
 
 vim HelloWorld.asm
 
@@ -234,5 +234,257 @@ ld -o HelloWorld HelloWorld.o (Link)
 echo $? (Display return value)
 5
 
-Video 9:
+HelloWorld GDB:
+
+gdb ./HelloWorld 
+GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "i686-linux-gnu".
+For bug reporting instructions, please see:
+<http://bugs.launchpad.net/gdb-linaro/>...
+Reading symbols from /SLAE x86/HelloWorld/HelloWorld...(no debugging symbols found)...done.
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run 
+Starting program: /SLAE x86/HelloWorld/HelloWorld 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) set disassembly-flavor intel
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) info registers
+eax            0x0	0
+ecx            0x0	0
+edx            0x0	0
+ebx            0x0	0
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x8048080	0x8048080 <_start>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) stepi
+0x08048085 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+=> 0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) info registers
+eax            0x4	4
+ecx            0x0	0
+edx            0x0	0
+ebx            0x0	0
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x8048085	0x8048085 <_start+5>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) stepi
+0x0804808a in _start ()
+(gdb) info registers
+eax            0x4	4
+ecx            0x0	0
+edx            0x0	0
+ebx            0x1	1
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x804808a	0x804808a <_start+10>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+=> 0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) x/s 0x80490a4
+0x80490a4 <message>:	 "Hello World!"
+(gdb) stepi
+0x0804808f in _start ()
+(gdb) info registers
+eax            0x4	4
+ecx            0x80490a4	134516900
+edx            0x0	0
+ebx            0x1	1
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x804808f	0x804808f <_start+15>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) stepi
+0x08048094 in _start ()
+(gdb) info registers
+eax            0x4	4
+ecx            0x80490a4	134516900
+edx            0xc	12
+ebx            0x1	1
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x8048094	0x8048094 <_start+20>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+=> 0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) stepi
+Hello World!0x08048096 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+=> 0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) info registers
+eax            0xc	12
+ecx            0x80490a4	134516900
+edx            0xc	12
+ebx            0x1	1
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x8048096	0x8048096 <_start+22>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) stepi
+0x0804809b in _start ()
+(gdb) info registers
+eax            0x1	1
+ecx            0x80490a4	134516900
+edx            0xc	12
+ebx            0x1	1
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x804809b	0x804809b <_start+27>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+=> 0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) stepi
+0x080480a0 in _start ()
+(gdb) info registers
+eax            0x1	1
+ecx            0x80490a4	134516900
+edx            0xc	12
+ebx            0x5	5
+esp            0xbffff700	0xbffff700
+ebp            0x0	0x0
+esi            0x0	0
+edi            0x0	0
+eip            0x80480a0	0x80480a0 <_start+32>
+eflags         0x202	[ IF ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x0	0
+(gdb) disassemble 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490a4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+=> 0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) stepi
+[Inferior 1 (process 8672) exited with code 05]
+
+Data Types:
 
