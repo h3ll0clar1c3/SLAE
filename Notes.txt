@@ -229,9 +229,9 @@ section .data
         message: db "Hello World!"
         mlen    equ  $-message
 
-nasm -f elf32 -o HelloWorld.o HelloWorld.asm
-ld -o HelloWorld HelloWorld.o
-echo $? (display return value)
+nasm -f elf32 -o HelloWorld.o HelloWorld.asm (Assemble)
+ld -o HelloWorld HelloWorld.o (Link)
+echo $? (Display return value)
 5
 
 Video 9:
