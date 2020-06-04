@@ -488,3 +488,12 @@ End of assembler dump.
 
 Data Types:
 
+Accessing Memory Reference with []
+message db 0xAA, 0xBB, 0xCC, 0xDD (db = define bytes)
+mov eax, message <- moves address into eax
+mov eax, [message] <- moves value into eax
+
+Declare Uninitialized Data
+resb 64 (reserve 64 bytes)
+resw 1 (reserve a word)
+
