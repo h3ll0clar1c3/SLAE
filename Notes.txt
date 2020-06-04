@@ -488,6 +488,12 @@ End of assembler dump.
 
 Data Types:
 
+Byte - 8 bits
+Word - 16 bits
+Double Word - 32 bits
+Quad Word - 64 bits
+Double Quad Word - 128 bits
+
 Accessing Memory Reference with []
 message db 0xAA, 0xBB, 0xCC, 0xDD (db = define bytes)
 mov eax, message <- moves address into eax
@@ -496,4 +502,156 @@ mov eax, [message] <- moves value into eax
 Declare Uninitialized Data
 resb 64 (reserve 64 bytes)
 resw 1 (reserve a word)
+
+vim DataTypes.nasm
+; DataTypes.nasm
+; Author: Vivek Ramachandran
+
+
+
+global _start
+
+section .text
+
+_start:
+
+        ; print hello world on the screen
+
+        mov eax, 0x4
+        mov ebx, 0x1
+        mov ecx, message
+        mov edx, mlen
+        int 0x80
+
+        ; exit the program gracefully
+
+        mov eax, 0x1
+        mov ebx, 0x5
+        int 0x80
+
+
+
+section .data
+
+        var1:   db 0xAA
+        var2:   db 0xBB, 0xCC, 0xDD
+        var3:   dw 0xEE
+        var4:   dd 0xAABBCCDD
+        var5:   dd 0x112233
+        var6:   TIMES 6 db 0xFF
+
+        message: db "Hello World!"
+        mlen    equ  $-message
+
+
+section .bss
+
+        var7:   resb 100
+        var8:   resw 20
+	
+cat compile.sh 
+#!/bin/bash
+
+echo '[+] Assembling with Nasm ... '
+nasm -f elf32 -o $1.o $1.nasm
+
+echo '[+] Linking ...'
+ld -o $1 $1.o
+
+echo '[+] Done!'
+
+./compile.sh  DataTypes
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+
+gdb -q ./DataTypes
+Reading symbols from /SLAE x86/DataTypes/DataTypes...(no debugging symbols found)...done.
+(gdb) info functions
+All defined functions:
+
+Non-debugging symbols:
+0x08048080  _start
+(gdb) shell readelf -h DataTypes
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Intel 80386
+  Version:                           0x1
+  Entry point address:               0x8048080
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          240 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         7
+  Section header string table index: 4
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) set disassembly-flavor intel
+(gdb) run
+Starting program: /SLAE x86/DataTypes/DataTypes 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b8
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	mov    eax,0x1
+   0x0804809b <+27>:	mov    ebx,0x5
+   0x080480a0 <+32>:	int    0x80
+End of assembler dump.
+(gdb) info variables
+All defined variables:
+
+Non-debugging symbols:
+0x080490a4  var1
+0x080490a5  var2
+0x080490a8  var3
+0x080490aa  var4
+0x080490ae  var5
+0x080490b2  var6
+0x080490b8  message
+0x080490c4  var7
+0x08049128  var8
+(gdb) x/xb 0x080490a4
+0x80490a4 <var1>:	0xaa
+(gdb) x/xb &var1
+0x80490a4 <var1>:	0xaa
+(gdb) x/3xb &var2
+0x80490a5 <var2>:	0xbb	0xcc	0xdd
+(gdb) x/2xb &var3
+0x80490a8 <var3>:	0xee	0x00
+(gdb) print &var4
+$1 = (<data variable, no debug info> *) 0x80490aa
+(gdb) x/xb 0x80490aa
+0x80490aa <var4>:	0xdd
+(gdb) x/xb 0x80490ab
+0x80490ab <var4+1>:	0xcc
+(gdb) x/xb 0x80490ac
+0x80490ac <var4+2>:	0xbb
+(gdb) x/xb 0x80490ad
+0x80490ad <var4+3>:	0xaa
+(gdb) print &var5
+$2 = (<data variable, no debug info> *) 0x80490ae
+(gdb) x/xb 0x80490ae
+0x80490ae <var5>:	0x33
+(gdb) x/xb 0x80490af
+0x80490af <var5+1>:	0x22
+(gdb) x/xb 0x80490b0
+0x80490b0 <var5+2>:	0x11
+(gdb) x/xb &var6
+0x80490b2 <var6>:	0xff
+
+Moving Data:
 
