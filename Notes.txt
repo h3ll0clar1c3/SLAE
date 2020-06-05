@@ -1090,4 +1090,307 @@ Continuing.
 Error while running hook_stop:
 No registers
 
-next vid !
+Stack:
+
+vim Stack.nasm
+; Filename: Stack.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        mov eax, 0x66778899
+        mov ebx, 0x0
+        mov ecx, 0x0
+
+        ; push and pop of r/m16 and r/m32
+
+        ; register push and pop
+
+        push ax
+        pop bx
+
+        push eax
+        pop ecx
+
+        ;  memory push and pop
+
+        push word [sample]
+        pop ecx
+
+        push dword [sample]
+        pop edx
+
+
+        ; exit the program gracefully
+
+        mov eax, 1
+        mov ebx, 0
+        int 0x80
+
+
+section .data
+
+sample: db 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x11, 0x22
+
+./compile.sh Stack
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+gdb -q ./Stack
+Reading symbols from /SLAE x86/MovingData/Stack...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run
+Starting program: /SLAE x86/MovingData/Stack 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    eax,0x66778899
+   0x08048085 <+5>:	mov    ebx,0x0
+   0x0804808a <+10>:	mov    ecx,0x0
+   0x0804808f <+15>:	push   ax
+   0x08048091 <+17>:	pop    bx
+   0x08048093 <+19>:	push   eax
+   0x08048094 <+20>:	pop    ecx
+   0x08048095 <+21>:	push   WORD PTR ds:0x80490b0
+   0x0804809c <+28>:	pop    ecx
+   0x0804809d <+29>:	push   DWORD PTR ds:0x80490b0
+   0x080480a3 <+35>:	pop    edx
+   0x080480a4 <+36>:	mov    eax,0x1
+   0x080480a9 <+41>:	mov    ebx,0x0
+   0x080480ae <+46>:	int    0x80
+End of assembler dump.
+(gdb) display/x $eax
+1: /x $eax = 0x0
+(gdb) display/x $ebx
+2: /x $ebx = 0x0
+(gdb) display/x $ecx
+3: /x $ecx = 0x0
+(gdb) define hook-stop
+Redefine command "hook-stop"? (y or n) y
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>x/8xb $esp
+>x/4xh $esp
+>x/3xw $esp
+>disassemble $eip,+10
+>end
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    eax,0x66778899
+   0x08048085 <+5>:	mov    ebx,0x0
+   0x0804808a <+10>:	mov    ecx,0x0
+   0x0804808f <+15>:	push   ax
+   0x08048091 <+17>:	pop    bx
+   0x08048093 <+19>:	push   eax
+   0x08048094 <+20>:	pop    ecx
+   0x08048095 <+21>:	push   WORD PTR ds:0x80490b0
+   0x0804809c <+28>:	pop    ecx
+   0x0804809d <+29>:	push   DWORD PTR ds:0x80490b0
+   0x080480a3 <+35>:	pop    edx
+   0x080480a4 <+36>:	mov    eax,0x1
+   0x080480a9 <+41>:	mov    ebx,0x0
+   0x080480ae <+46>:	int    0x80
+End of assembler dump.
+(gdb) nexti
+0xbffff710:	0x01	0x00	0x00	0x00	0x36	0xf8	0xff	0xbf
+0xbffff710:	0x0001	0x0000	0xf836	0xbfff
+0xbffff710:	0x00000001	0xbffff836	0x00000000
+Dump of assembler code from 0x8048085 to 0x804808f:
+=> 0x08048085 <_start+5>:	mov    ebx,0x0
+   0x0804808a <_start+10>:	mov    ecx,0x0
+End of assembler dump.
+0x08048085 in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x0
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff710:	0x01	0x00	0x00	0x00	0x36	0xf8	0xff	0xbf
+0xbffff710:	0x0001	0x0000	0xf836	0xbfff
+0xbffff710:	0x00000001	0xbffff836	0x00000000
+Dump of assembler code from 0x804808a to 0x8048094:
+=> 0x0804808a <_start+10>:	mov    ecx,0x0
+   0x0804808f <_start+15>:	push   ax
+   0x08048091 <_start+17>:	pop    bx
+   0x08048093 <_start+19>:	push   eax
+End of assembler dump.
+0x0804808a in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x0
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff710:	0x01	0x00	0x00	0x00	0x36	0xf8	0xff	0xbf
+0xbffff710:	0x0001	0x0000	0xf836	0xbfff
+0xbffff710:	0x00000001	0xbffff836	0x00000000
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <_start+15>:	push   ax
+   0x08048091 <_start+17>:	pop    bx
+   0x08048093 <_start+19>:	push   eax
+   0x08048094 <_start+20>:	pop    ecx
+   0x08048095 <_start+21>:	push   WORD PTR ds:0x80490b0
+End of assembler dump.
+0x0804808f in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x0
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff70e:	0x99	0x88	0x01	0x00	0x00	0x00	0x36	0xf8
+0xbffff70e:	0x8899	0x0001	0x0000	0xf836
+0xbffff70e:	0x00018899	0xf8360000	0x0000bfff
+Dump of assembler code from 0x8048091 to 0x804809b:
+=> 0x08048091 <_start+17>:	pop    bx
+   0x08048093 <_start+19>:	push   eax
+   0x08048094 <_start+20>:	pop    ecx
+   0x08048095 <_start+21>:	push   WORD PTR ds:0x80490b0
+End of assembler dump.
+0x08048091 in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x0
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff710:	0x01	0x00	0x00	0x00	0x36	0xf8	0xff	0xbf
+0xbffff710:	0x0001	0x0000	0xf836	0xbfff
+0xbffff710:	0x00000001	0xbffff836	0x00000000
+Dump of assembler code from 0x8048093 to 0x804809d:
+=> 0x08048093 <_start+19>:	push   eax
+   0x08048094 <_start+20>:	pop    ecx
+   0x08048095 <_start+21>:	push   WORD PTR ds:0x80490b0
+   0x0804809c <_start+28>:	pop    ecx
+End of assembler dump.
+0x08048093 in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff70c:	0x99	0x88	0x77	0x66	0x01	0x00	0x00	0x00
+0xbffff70c:	0x8899	0x6677	0x0001	0x0000
+0xbffff70c:	0x66778899	0x00000001	0xbffff836
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <_start+20>:	pop    ecx
+   0x08048095 <_start+21>:	push   WORD PTR ds:0x80490b0
+   0x0804809c <_start+28>:	pop    ecx
+   0x0804809d <_start+29>:	push   DWORD PTR ds:0x80490b0
+End of assembler dump.
+0x08048094 in _start ()
+3: /x $ecx = 0x0
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff710:	0x01	0x00	0x00	0x00	0x36	0xf8	0xff	0xbf
+0xbffff710:	0x0001	0x0000	0xf836	0xbfff
+0xbffff710:	0x00000001	0xbffff836	0x00000000
+Dump of assembler code from 0x8048095 to 0x804809f:
+=> 0x08048095 <_start+21>:	push   WORD PTR ds:0x80490b0
+   0x0804809c <_start+28>:	pop    ecx
+   0x0804809d <_start+29>:	push   DWORD PTR ds:0x80490b0
+End of assembler dump.
+0x08048095 in _start ()
+3: /x $ecx = 0x66778899
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) x/xh 0x80490b0
+0x80490b0 <sample>:	0xbbaa
+(gdb) nexti
+0xbffff70e:	0xaa	0xbb	0x01	0x00	0x00	0x00	0x36	0xf8
+0xbffff70e:	0xbbaa	0x0001	0x0000	0xf836
+0xbffff70e:	0x0001bbaa	0xf8360000	0x0000bfff
+Dump of assembler code from 0x804809c to 0x80480a6:
+=> 0x0804809c <_start+28>:	pop    ecx
+   0x0804809d <_start+29>:	push   DWORD PTR ds:0x80490b0
+   0x080480a3 <_start+35>:	pop    edx
+   0x080480a4 <_start+36>:	mov    eax,0x1
+End of assembler dump.
+0x0804809c in _start ()
+3: /x $ecx = 0x66778899
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff712:	0x00	0x00	0x36	0xf8	0xff	0xbf	0x00	0x00
+0xbffff712:	0x0000	0xf836	0xbfff	0x0000
+0xbffff712:	0xf8360000	0x0000bfff	0xf8680000
+Dump of assembler code from 0x804809d to 0x80480a7:
+=> 0x0804809d <_start+29>:	push   DWORD PTR ds:0x80490b0
+   0x080480a3 <_start+35>:	pop    edx
+   0x080480a4 <_start+36>:	mov    eax,0x1
+End of assembler dump.
+0x0804809d in _start ()
+3: /x $ecx = 0x1bbaa
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) x/xw 0x80490b0
+0x80490b0 <sample>:	0xddccbbaa
+(gdb) nexti
+0xbffff70e:	0xaa	0xbb	0xcc	0xdd	0x00	0x00	0x36	0xf8
+0xbffff70e:	0xbbaa	0xddcc	0x0000	0xf836
+0xbffff70e:	0xddccbbaa	0xf8360000	0x0000bfff
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <_start+35>:	pop    edx
+   0x080480a4 <_start+36>:	mov    eax,0x1
+   0x080480a9 <_start+41>:	mov    ebx,0x0
+End of assembler dump.
+0x080480a3 in _start ()
+3: /x $ecx = 0x1bbaa
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) 
+0xbffff712:	0x00	0x00	0x36	0xf8	0xff	0xbf	0x00	0x00
+0xbffff712:	0x0000	0xf836	0xbfff	0x0000
+0xbffff712:	0xf8360000	0x0000bfff	0xf8680000
+Dump of assembler code from 0x80480a4 to 0x80480ae:
+=> 0x080480a4 <_start+36>:	mov    eax,0x1
+   0x080480a9 <_start+41>:	mov    ebx,0x0
+End of assembler dump.
+0x080480a4 in _start ()
+3: /x $ecx = 0x1bbaa
+2: /x $ebx = 0x8899
+1: /x $eax = 0x66778899
+(gdb) display/x $edx
+4: /x $edx = 0xddccbbaa
+(gdb) nexti
+0xbffff712:	0x00	0x00	0x36	0xf8	0xff	0xbf	0x00	0x00
+0xbffff712:	0x0000	0xf836	0xbfff	0x0000
+0xbffff712:	0xf8360000	0x0000bfff	0xf8680000
+Dump of assembler code from 0x80480a9 to 0x80480b3:
+=> 0x080480a9 <_start+41>:	mov    ebx,0x0
+   0x080480ae <_start+46>:	int    0x80
+   0x080480b0:	stos   BYTE PTR es:[edi],al
+   0x080480b1:	mov    ebx,0xffeeddcc
+End of assembler dump.
+0x080480a9 in _start ()
+4: /x $edx = 0xddccbbaa
+3: /x $ecx = 0x1bbaa
+2: /x $ebx = 0x8899
+1: /x $eax = 0x1
+(gdb) nexti
+0xbffff712:	0x00	0x00	0x36	0xf8	0xff	0xbf	0x00	0x00
+0xbffff712:	0x0000	0xf836	0xbfff	0x0000
+0xbffff712:	0xf8360000	0x0000bfff	0xf8680000
+Dump of assembler code from 0x80480ae to 0x80480b8:
+=> 0x080480ae <_start+46>:	int    0x80
+   0x080480b0:	stos   BYTE PTR es:[edi],al
+   0x080480b1:	mov    ebx,0xffeeddcc
+   0x080480b6:	adc    DWORD PTR [edx],esp
+End of assembler dump.
+0x080480ae in _start ()
+4: /x $edx = 0xddccbbaa
+3: /x $ecx = 0x1bbaa
+2: /x $ebx = 0x0
+1: /x $eax = 0x1
+(gdb) nexti
+[Inferior 1 (process 20141) exited normally]
+Error while running hook_stop:
+No registers.
+
+Stack Arithmetic:
+
+
