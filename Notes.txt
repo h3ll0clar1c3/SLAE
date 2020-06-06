@@ -2792,3 +2792,574 @@ No registers.
 
 Control Instructions:
 
+JMP (Unconditional)
+* Near Jump (Current code segment)
+  - Short; -128 to +127 from current position
+* Far Jump (In another segment)
+
+Jxx (Conditional)
+* JZ, JNZ, JA, JAE, JC, JNC etc (Uses flags)
+* Cannot be used for Far Jumps
+ - JNZ label1
+ - JMP Far_Label
+ - lable1:
+ 
+Vim Control.nasm
+
+; Filename: Control.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        jmp Begin
+
+NeverExecute:
+
+        mov eax, 0x10
+        xor ebx, ebx
+
+Begin:
+        mov eax, 0x5
+
+PrintHW:
+
+        push eax
+
+        ; Print hello world using write syscall
+        mov eax, 0x4
+        mov ebx, 1
+        mov ecx, message
+        mov edx, mlen
+        int 0x80
+
+        pop eax
+        dec eax
+        jnz PrintHW
+
+
+        mov eax, 0x1
+        mov ebx, 0xa            ; sys_exit syscall
+        int 0x80
+
+section .data
+
+        message: db "Hello World! "
+        mlen     equ $-message
+
+./compile.sh Control
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+./Control 
+Hello World! Hello World! Hello World! Hello World! Hello World!
+gdb -q ./Control
+Reading symbols from /SLAE x86/Control/Control...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run
+Starting program: /SLAE x86/Control/Control 
+
+Breakpoint 1, 0x08048080 in _start ()     
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	jmp    0x8048089 <Begin>
+End of assembler dump.
+(gdb) display/x $eax
+1: /x $eax = 0x0
+(gdb) define hook-stop
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>disassemble $eip,+10
+>end
+(gdb) nexti
+Dump of assembler code from 0x8048089 to 0x8048093:
+=> 0x08048089 <Begin+0>:	mov    eax,0x5
+   0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+End of assembler dump.
+0x08048089 in Begin ()
+1: /x $eax = 0x0
+(gdb) 
+Dump of assembler code from 0x804808e to 0x8048098:
+=> 0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808e in PrintHW ()
+1: /x $eax = 0x5
+(gdb) x/xw $esp
+0xbffff710:	0x00000001
+(gdb) nexti
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808f in PrintHW ()
+1: /x $eax = 0x5
+(gdb) x/xw $esp
+0xbffff70c:	0x00000005
+(gdb) nexti
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <PrintHW+6>:	mov    ebx,0x1
+   0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+End of assembler dump.
+0x08048094 in PrintHW ()
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048099 to 0x80480a3:
+=> 0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+   0x0804809e <PrintHW+16>:	mov    edx,0xd
+End of assembler dump.
+0x08048099 in PrintHW ()
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804809e to 0x80480a8:
+=> 0x0804809e <PrintHW+16>:	mov    edx,0xd
+   0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+End of assembler dump.
+0x0804809e in PrintHW ()
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+End of assembler dump.
+0x080480a3 in PrintHW ()
+1: /x $eax = 0x4
+(gdb) 
+Hello World! Dump of assembler code from 0x80480a5 to 0x80480af:
+=> 0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a5 in PrintHW ()
+1: /x $eax = 0xd
+(gdb) 
+Dump of assembler code from 0x80480a6 to 0x80480b0:
+=> 0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a6 in PrintHW ()
+1: /x $eax = 0x5
+(gdb) 
+Dump of assembler code from 0x80480a7 to 0x80480b1:
+=> 0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a7 in PrintHW ()
+1: /x $eax = 0x4
+(gdb) display $eflags
+2: $eflags = [ IF ]
+(gdb) nexti
+Dump of assembler code from 0x804808e to 0x8048098:
+=> 0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808f in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <PrintHW+6>:	mov    ebx,0x1
+   0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+End of assembler dump.
+0x08048094 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048099 to 0x80480a3:
+=> 0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+   0x0804809e <PrintHW+16>:	mov    edx,0xd
+End of assembler dump.
+0x08048099 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804809e to 0x80480a8:
+=> 0x0804809e <PrintHW+16>:	mov    edx,0xd
+   0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+End of assembler dump.
+0x0804809e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+End of assembler dump.
+0x080480a3 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Hello World! Dump of assembler code from 0x80480a5 to 0x80480af:
+=> 0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a5 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0xd
+(gdb) 
+Dump of assembler code from 0x80480a6 to 0x80480b0:
+=> 0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a6 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a7 to 0x80480b1:
+=> 0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a7 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x3
+(gdb) 
+Dump of assembler code from 0x804808e to 0x8048098:
+=> 0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808e in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x3
+(gdb) 
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808f in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x3
+(gdb) 
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <PrintHW+6>:	mov    ebx,0x1
+   0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+End of assembler dump.
+0x08048094 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048099 to 0x80480a3:
+=> 0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+   0x0804809e <PrintHW+16>:	mov    edx,0xd
+End of assembler dump.
+0x08048099 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804809e to 0x80480a8:
+=> 0x0804809e <PrintHW+16>:	mov    edx,0xd
+   0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+End of assembler dump.
+0x0804809e in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+End of assembler dump.
+0x080480a3 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x4
+(gdb) 
+Hello World! Dump of assembler code from 0x80480a5 to 0x80480af:
+=> 0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a5 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0xd
+(gdb) 
+Dump of assembler code from 0x80480a6 to 0x80480b0:
+=> 0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a6 in PrintHW ()
+2: $eflags = [ PF IF ]
+1: /x $eax = 0x3
+(gdb) 
+Dump of assembler code from 0x80480a7 to 0x80480b1:
+=> 0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a7 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x2
+(gdb) 
+Dump of assembler code from 0x804808e to 0x8048098:
+=> 0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x2
+(gdb) 
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808f in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x2
+(gdb) 
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <PrintHW+6>:	mov    ebx,0x1
+   0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+End of assembler dump.
+0x08048094 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048099 to 0x80480a3:
+=> 0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+   0x0804809e <PrintHW+16>:	mov    edx,0xd
+End of assembler dump.
+0x08048099 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804809e to 0x80480a8:
+=> 0x0804809e <PrintHW+16>:	mov    edx,0xd
+   0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+End of assembler dump.
+0x0804809e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+End of assembler dump.
+0x080480a3 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Hello World! Dump of assembler code from 0x80480a5 to 0x80480af:
+=> 0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a5 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0xd
+(gdb) 
+Dump of assembler code from 0x80480a6 to 0x80480b0:
+=> 0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a6 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x2
+(gdb) 
+Dump of assembler code from 0x80480a7 to 0x80480b1:
+=> 0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a7 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x1
+(gdb) 
+Dump of assembler code from 0x804808e to 0x8048098:
+=> 0x0804808e <PrintHW+0>:	push   eax
+   0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x1
+(gdb) 
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <PrintHW+1>:	mov    eax,0x4
+   0x08048094 <PrintHW+6>:	mov    ebx,0x1
+End of assembler dump.
+0x0804808f in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x1
+(gdb) 
+Dump of assembler code from 0x8048094 to 0x804809e:
+=> 0x08048094 <PrintHW+6>:	mov    ebx,0x1
+   0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+End of assembler dump.
+0x08048094 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x8048099 to 0x80480a3:
+=> 0x08048099 <PrintHW+11>:	mov    ecx,0x80490b8
+   0x0804809e <PrintHW+16>:	mov    edx,0xd
+End of assembler dump.
+0x08048099 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x804809e to 0x80480a8:
+=> 0x0804809e <PrintHW+16>:	mov    edx,0xd
+   0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+End of assembler dump.
+0x0804809e in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Dump of assembler code from 0x80480a3 to 0x80480ad:
+=> 0x080480a3 <PrintHW+21>:	int    0x80
+   0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+End of assembler dump.
+0x080480a3 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x4
+(gdb) 
+Hello World! Dump of assembler code from 0x80480a5 to 0x80480af:
+=> 0x080480a5 <PrintHW+23>:	pop    eax
+   0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a5 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0xd
+(gdb) 
+Dump of assembler code from 0x80480a6 to 0x80480b0:
+=> 0x080480a6 <PrintHW+24>:	dec    eax
+   0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a6 in PrintHW ()
+2: $eflags = [ IF ]
+1: /x $eax = 0x1
+(gdb) 
+Dump of assembler code from 0x80480a7 to 0x80480b1:
+=> 0x080480a7 <PrintHW+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a7 in PrintHW ()
+2: $eflags = [ PF ZF IF ]
+1: /x $eax = 0x0
+(gdb) 
+Dump of assembler code from 0x80480a9 to 0x80480b3:
+=> 0x080480a9 <PrintHW+27>:	mov    eax,0x1
+   0x080480ae <PrintHW+32>:	mov    ebx,0xa
+End of assembler dump.
+0x080480a9 in PrintHW ()
+2: $eflags = [ PF ZF IF ]
+1: /x $eax = 0x0
+(gdb) 
+Dump of assembler code from 0x80480ae to 0x80480b8:
+=> 0x080480ae <PrintHW+32>:	mov    ebx,0xa
+   0x080480b3 <PrintHW+37>:	int    0x80
+   0x080480b5:	add    BYTE PTR [eax],al
+   0x080480b7:	add    BYTE PTR [eax+0x65],cl
+End of assembler dump.
+0x080480ae in PrintHW ()
+2: $eflags = [ PF ZF IF ]
+1: /x $eax = 0x1
+(gdb) 
+Dump of assembler code from 0x80480b3 to 0x80480bd:
+=> 0x080480b3 <PrintHW+37>:	int    0x80
+   0x080480b5:	add    BYTE PTR [eax],al
+   0x080480b7:	add    BYTE PTR [eax+0x65],cl
+   0x080480ba:	ins    BYTE PTR es:[edi],dx
+   0x080480bb:	ins    BYTE PTR es:[edi],dx
+   0x080480bc:	outs   dx,DWORD PTR ds:[esi]
+End of assembler dump.
+0x080480b3 in PrintHW ()
+2: $eflags = [ PF ZF IF ]
+1: /x $eax = 0x1
+(gdb) disassemble 
+Dump of assembler code for function PrintHW:
+   0x0804808e <+0>:	push   eax
+   0x0804808f <+1>:	mov    eax,0x4
+   0x08048094 <+6>:	mov    ebx,0x1
+   0x08048099 <+11>:	mov    ecx,0x80490b8
+   0x0804809e <+16>:	mov    edx,0xd
+   0x080480a3 <+21>:	int    0x80
+   0x080480a5 <+23>:	pop    eax
+   0x080480a6 <+24>:	dec    eax
+   0x080480a7 <+25>:	jne    0x804808e <PrintHW>
+   0x080480a9 <+27>:	mov    eax,0x1
+   0x080480ae <+32>:	mov    ebx,0xa
+=> 0x080480b3 <+37>:	int    0x80
+End of assembler dump.
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 4194] will be killed.
+
+Quit anyway? (y or n) y
+
+Vid 17:
