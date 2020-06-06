@@ -1983,5 +1983,131 @@ Continuing.
 Error while running hook_stop:
 No registers.
 
-new vid:
+Multiplication-Division:
 
+vim MulDiv.nasm
+
+; Filename: MulDiv.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        ; unsigned r/m8 multiplication
+        mov eax, 0x0
+
+        mov al, 0x10
+        mov bl, 0x2
+        mul bl
+
+        mov al, 0xFF
+        mul bl
+
+        ; unsigned r/m16 multiplication
+
+        mov eax, 0x0
+        mov ebx, 0x0
+
+        mov ax, 0x1122
+        mov bx, 0x0002
+        mul bx
+
+        mov ax, 0x1122
+        mov bx, 0x1122
+        mul bx
+
+        ; unsigned r/m32 multiplication
+
+        mov eax, 0x11223344
+        mov ebx, 0x00000002
+        mul ebx
+
+        mov eax, 0x11223344
+        mov ebx, 0x55667788
+        mul ebx
+
+        ; multiplication using memory locations
+
+        mul byte [var1]
+        mul word [var2]
+        mul dword [var3]
+
+        ; division using r/m16
+
+        mov dx, 0x0
+        mov ax, 0x7788
+        mov cx, 0x2
+        div cx
+
+        mov ax, 0x7788 + 0x1
+        mov cx, 0x2
+        div cx
+
+        ; exit program
+
+        mov eax, 1
+        mov ebx, 10
+        int 0x80
+
+section .data
+
+        var1    db      0x05
+        var2    dw      0x1122
+        var3    dd      0x11223344
+
+./compile.sh MulDiv
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+gdb -q ./MulDiv
+Reading symbols from /SLAE x86/Arithmetic/MulDiv...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run
+Starting program: /SLAE x86/Arithmetic/MulDiv 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    eax,0x0
+   0x08048085 <+5>:	mov    al,0x10
+   0x08048087 <+7>:	mov    bl,0x2
+   0x08048089 <+9>:	mul    bl
+   0x0804808b <+11>:	mov    al,0xff
+   0x0804808d <+13>:	mul    bl
+   0x0804808f <+15>:	mov    eax,0x0
+   0x08048094 <+20>:	mov    ebx,0x0
+   0x08048099 <+25>:	mov    ax,0x1122
+   0x0804809d <+29>:	mov    bx,0x2
+   0x080480a1 <+33>:	mul    bx
+   0x080480a4 <+36>:	mov    ax,0x1122
+   0x080480a8 <+40>:	mov    bx,0x1122
+   0x080480ac <+44>:	mul    bx
+   0x080480af <+47>:	mov    eax,0x11223344
+   0x080480b4 <+52>:	mov    ebx,0x2
+   0x080480b9 <+57>:	mul    ebx
+   0x080480bb <+59>:	mov    eax,0x11223344
+   0x080480c0 <+64>:	mov    ebx,0x55667788
+   0x080480c5 <+69>:	mul    ebx
+   0x080480c7 <+71>:	mul    BYTE PTR ds:0x8049100
+   0x080480cd <+77>:	mul    WORD PTR ds:0x8049101
+   0x080480d4 <+84>:	mul    DWORD PTR ds:0x8049103
+   0x080480da <+90>:	mov    dx,0x0
+   0x080480de <+94>:	mov    ax,0x7788
+   0x080480e2 <+98>:	mov    cx,0x2
+   0x080480e6 <+102>:	div    cx
+   0x080480e9 <+105>:	mov    ax,0x7789
+   0x080480ed <+109>:	mov    cx,0x2
+   0x080480f1 <+113>:	div    cx
+   0x080480f4 <+116>:	mov    eax,0x1
+   0x080480f9 <+121>:	mov    ebx,0xa
+   0x080480fe <+126>:	int    0x80
+End of assembler dump.
