@@ -2265,6 +2265,73 @@ End of assembler dump.
 3: /x $ebx = 0x2
 (gdb) display $eflags
 4: $eflags = [ PF IF ]
-
-
+(gdb) define hook-stop
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>disassemble $eip,+15
+>end
+(gdb) nexti
+0x080480c0 in _start ()
+4: $eflags = [ PF IF ]
+3: /x $ebx = 0x2
+2: /x $eax = 0x11223344
+1: /x $edx = 0x0
+(gdb) disas
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x0
+   0x08048085 <+5>:	mov    al,0x10
+   0x08048087 <+7>:	mov    bl,0x2
+   0x08048089 <+9>:	mul    bl
+   0x0804808b <+11>:	mov    al,0xff
+   0x0804808d <+13>:	mul    bl
+   0x0804808f <+15>:	mov    eax,0x0
+   0x08048094 <+20>:	mov    ebx,0x0
+   0x08048099 <+25>:	mov    ax,0x1122
+   0x0804809d <+29>:	mov    bx,0x2
+   0x080480a1 <+33>:	mul    bx
+   0x080480a4 <+36>:	mov    ax,0x1122
+   0x080480a8 <+40>:	mov    bx,0x1122
+   0x080480ac <+44>:	mul    bx
+   0x080480af <+47>:	mov    eax,0x11223344
+   0x080480b4 <+52>:	mov    ebx,0x2
+   0x080480b9 <+57>:	mul    ebx
+   0x080480bb <+59>:	mov    eax,0x11223344
+=> 0x080480c0 <+64>:	mov    ebx,0x55667788
+   0x080480c5 <+69>:	mul    ebx
+   0x080480c7 <+71>:	mul    BYTE PTR ds:0x8049100
+   0x080480cd <+77>:	mul    WORD PTR ds:0x8049101
+   0x080480d4 <+84>:	mul    DWORD PTR ds:0x8049103
+   0x080480da <+90>:	mov    dx,0x0
+   0x080480de <+94>:	mov    ax,0x7788
+   0x080480e2 <+98>:	mov    cx,0x2
+   0x080480e6 <+102>:	div    cx
+   0x080480e9 <+105>:	mov    ax,0x7789
+   0x080480ed <+109>:	mov    cx,0x2
+   0x080480f1 <+113>:	div    cx
+   0x080480f4 <+116>:	mov    eax,0x1
+   0x080480f9 <+121>:	mov    ebx,0xa
+   0x080480fe <+126>:	int    0x80
+End of assembler dump.
+(gdb) nexti
+Dump of assembler code from 0x80480c5 to 0x80480d4:
+=> 0x080480c5 <_start+69>:	mul    ebx
+   0x080480c7 <_start+71>:	mul    BYTE PTR ds:0x8049100
+   0x080480cd <_start+77>:	mul    WORD PTR ds:0x8049101
+End of assembler dump.
+0x080480c5 in _start ()
+4: $eflags = [ PF IF ]
+3: /x $ebx = 0x55667788
+2: /x $eax = 0x11223344
+1: /x $edx = 0x0
+(gdb) 
+Dump of assembler code from 0x80480c7 to 0x80480d6:
+=> 0x080480c7 <_start+71>:	mul    BYTE PTR ds:0x8049100
+   0x080480cd <_start+77>:	mul    WORD PTR ds:0x8049101
+   0x080480d4 <_start+84>:	mul    DWORD PTR ds:0x8049103
+End of assembler dump.
+0x080480c7 in _start ()
+4: $eflags = [ CF IF OF ]
+3: /x $ebx = 0x55667788
+2: /x $eax = 0x117d820
+1: /x $edx = 0x5b736a6
 
