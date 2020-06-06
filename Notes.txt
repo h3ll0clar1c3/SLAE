@@ -2488,4 +2488,94 @@ A debugging session is active.
 
 Quit anyway? (y or n) y
 
-Vid new:
+Logical Instructions:
+
+vim Logical.nasm
+
+; Filename: Logical.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        ; AND usage
+
+        mov al, 0x10
+        and al, 0x01
+
+        and byte [var1], 0xaa
+        and word [var2], 0x1122
+
+        ; OR usage
+
+        mov al, 0x10
+        or al, 0x01
+
+        or byte [var1], 0xaa
+
+        mov eax, 0
+        or eax, 0x0
+
+        ; XOR
+
+        xor dword [var3], 0x11223344
+        xor dword [var3], 0x11223344
+
+        ; NOT
+
+        mov eax, 0xFFFFFFFF
+        not eax
+        not eax
+
+
+        mov eax, 1
+        mov ebx, 10             ; sys_exit syscall
+        int 0x80
+
+section .data
+
+        var1    db      0xaa
+        var2    dw      0xbbcc
+        var3    dd      0x11223344
+
+./compile.sh Logical
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+gdb -q ./Logical
+Reading symbols from /SLAE x86/Logical/Logical...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run
+Starting program: /SLAE x86/Logical/Logical 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    al,0x10
+   0x08048082 <+2>:	and    al,0x1
+   0x08048084 <+4>:	and    BYTE PTR ds:0x80490d0,0xaa
+   0x0804808b <+11>:	and    WORD PTR ds:0x80490d1,0x1122
+   0x08048094 <+20>:	mov    al,0x10
+   0x08048096 <+22>:	or     al,0x1
+   0x08048098 <+24>:	or     BYTE PTR ds:0x80490d0,0xaa
+   0x0804809f <+31>:	mov    eax,0x0
+   0x080480a4 <+36>:	or     eax,0x0
+   0x080480a7 <+39>:	xor    DWORD PTR ds:0x80490d3,0x11223344
+   0x080480b1 <+49>:	xor    DWORD PTR ds:0x80490d3,0x11223344
+   0x080480bb <+59>:	mov    eax,0xffffffff
+   0x080480c0 <+64>:	not    eax
+   0x080480c2 <+66>:	not    eax
+   0x080480c4 <+68>:	mov    eax,0x1
+   0x080480c9 <+73>:	mov    ebx,0xa
+   0x080480ce <+78>:	int    0x80
+End of assembler dump.
+
