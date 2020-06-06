@@ -2111,3 +2111,160 @@ Dump of assembler code for function _start:
    0x080480f9 <+121>:	mov    ebx,0xa
    0x080480fe <+126>:	int    0x80
 End of assembler dump.
+(gdb) define hook-stop 
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>print/x $al
+>print/x $bl
+>print/x $ax 
+>disassemble $eip,+10
+>end
+(gdb) nexti
+$1 = 0x0
+$2 = 0x0
+$3 = 0x0
+Dump of assembler code from 0x8048085 to 0x804808f:
+=> 0x08048085 <_start+5>:	mov    al,0x10
+   0x08048087 <_start+7>:	mov    bl,0x2
+   0x08048089 <_start+9>:	mul    bl
+   0x0804808b <_start+11>:	mov    al,0xff
+   0x0804808d <_start+13>:	mul    bl
+End of assembler dump.
+0x08048085 in _start ()
+(gdb) 
+$4 = 0x10
+$5 = 0x0
+$6 = 0x10
+Dump of assembler code from 0x8048087 to 0x8048091:
+=> 0x08048087 <_start+7>:	mov    bl,0x2
+   0x08048089 <_start+9>:	mul    bl
+   0x0804808b <_start+11>:	mov    al,0xff
+   0x0804808d <_start+13>:	mul    bl
+   0x0804808f <_start+15>:	mov    eax,0x0
+End of assembler dump.
+0x08048087 in _start ()
+(gdb) 
+$7 = 0x10
+$8 = 0x2
+$9 = 0x10
+Dump of assembler code from 0x8048089 to 0x8048093:
+=> 0x08048089 <_start+9>:	mul    bl
+   0x0804808b <_start+11>:	mov    al,0xff
+   0x0804808d <_start+13>:	mul    bl
+   0x0804808f <_start+15>:	mov    eax,0x0
+End of assembler dump.
+0x08048089 in _start ()
+(gdb) 
+$10 = 0x20
+$11 = 0x2
+$12 = 0x20
+Dump of assembler code from 0x804808b to 0x8048095:
+=> 0x0804808b <_start+11>:	mov    al,0xff
+   0x0804808d <_start+13>:	mul    bl
+   0x0804808f <_start+15>:	mov    eax,0x0
+   0x08048094 <_start+20>:	mov    ebx,0x0
+End of assembler dump.
+0x0804808b in _start ()
+(gdb) 
+$13 = 0xff
+$14 = 0x2
+$15 = 0xff
+Dump of assembler code from 0x804808d to 0x8048097:
+=> 0x0804808d <_start+13>:	mul    bl
+   0x0804808f <_start+15>:	mov    eax,0x0
+   0x08048094 <_start+20>:	mov    ebx,0x0
+End of assembler dump.
+0x0804808d in _start ()
+(gdb) print $eflags
+$16 = [ IF ]
+(gdb) nexti
+$17 = 0xfe
+$18 = 0x2
+$19 = 0x1fe
+Dump of assembler code from 0x804808f to 0x8048099:
+=> 0x0804808f <_start+15>:	mov    eax,0x0
+   0x08048094 <_start+20>:	mov    ebx,0x0
+End of assembler dump.
+0x0804808f in _start ()
+(gdb) print $eflags
+$20 = [ CF SF IF OF ]
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 27283] will be killed.
+
+Quit anyway? (y or n) y
+gdb -q ./MulDiv
+Reading symbols from /SLAE x86/Arithmetic/MulDiv...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) disassemble _start
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    eax,0x0
+   0x08048085 <+5>:	mov    al,0x10
+   0x08048087 <+7>:	mov    bl,0x2
+   0x08048089 <+9>:	mul    bl
+   0x0804808b <+11>:	mov    al,0xff
+   0x0804808d <+13>:	mul    bl
+   0x0804808f <+15>:	mov    eax,0x0
+   0x08048094 <+20>:	mov    ebx,0x0
+   0x08048099 <+25>:	mov    ax,0x1122
+   0x0804809d <+29>:	mov    bx,0x2
+   0x080480a1 <+33>:	mul    bx
+   0x080480a4 <+36>:	mov    ax,0x1122
+   0x080480a8 <+40>:	mov    bx,0x1122
+   0x080480ac <+44>:	mul    bx
+   0x080480af <+47>:	mov    eax,0x11223344
+   0x080480b4 <+52>:	mov    ebx,0x2
+   0x080480b9 <+57>:	mul    ebx
+   0x080480bb <+59>:	mov    eax,0x11223344
+   0x080480c0 <+64>:	mov    ebx,0x55667788
+   0x080480c5 <+69>:	mul    ebx
+   0x080480c7 <+71>:	mul    BYTE PTR ds:0x8049100
+   0x080480cd <+77>:	mul    WORD PTR ds:0x8049101
+   0x080480d4 <+84>:	mul    DWORD PTR ds:0x8049103
+   0x080480da <+90>:	mov    dx,0x0
+   0x080480de <+94>:	mov    ax,0x7788
+   0x080480e2 <+98>:	mov    cx,0x2
+   0x080480e6 <+102>:	div    cx
+   0x080480e9 <+105>:	mov    ax,0x7789
+   0x080480ed <+109>:	mov    cx,0x2
+   0x080480f1 <+113>:	div    cx
+   0x080480f4 <+116>:	mov    eax,0x1
+   0x080480f9 <+121>:	mov    ebx,0xa
+   0x080480fe <+126>:	int    0x80
+End of assembler dump.
+(gdb) break *&_start +59
+Breakpoint 2 at 0x80480bb
+(gdb) run
+Starting program: /SLAE x86/Arithmetic/MulDiv 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble $eip,+10
+Dump of assembler code from 0x8048080 to 0x804808a:
+=> 0x08048080 <_start+0>:	mov    eax,0x0
+   0x08048085 <_start+5>:	mov    al,0x10
+   0x08048087 <_start+7>:	mov    bl,0x2
+   0x08048089 <_start+9>:	mul    bl
+End of assembler dump.
+(gdb) c
+Continuing.
+
+Breakpoint 2, 0x080480bb in _start ()
+(gdb) disassemble $eip,+10
+Dump of assembler code from 0x80480bb to 0x80480c5:
+=> 0x080480bb <_start+59>:	mov    eax,0x11223344
+   0x080480c0 <_start+64>:	mov    ebx,0x55667788
+End of assembler dump.
+(gdb) display/x $edx
+1: /x $edx = 0x0
+(gdb) display/x $eax
+2: /x $eax = 0x22446688
+(gdb) display/x $ebx
+3: /x $ebx = 0x2
+(gdb) display $eflags
+4: $eflags = [ PF IF ]
+
+
+
