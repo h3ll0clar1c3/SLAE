@@ -3421,3 +3421,205 @@ Hello World! Hello World! Hello World! Hello World! Hello World!
 
 Procedures:
 
+vim Procedure.nasm
+
+
+; Filename: Procedure.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+
+HelloWorldProc:
+
+        ; Print hello world using write syscall
+
+        mov eax, 0x4
+        mov ebx, 1
+        mov ecx, message
+        mov edx, mlen
+        int 0x80
+        ret   ; signifies end of procedure
+
+
+_start:
+
+        mov ecx, 0x10
+
+PrintHelloWorld:
+
+        push ecx
+        call HelloWorldProc
+        pop ecx
+        loop PrintHelloWorld
+
+
+
+        mov eax, 1
+        mov ebx, 10             ; sys_exit syscall
+        int 0x80
+
+section .data
+
+        message: db "Hello World!"
+        mlen     equ $-message
+	
+./compile.sh Procedure
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+./Procedure
+Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!
+gdb -q ./Procedure
+Reading symbols from /SLAE x86/Procedure/Procedure...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048097
+(gdb) run
+Starting program: /SLAE x86/Procedure/Procedure 
+
+Breakpoint 1, 0x08048097 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048097 <+0>:	mov    ecx,0x10
+End of assembler dump.
+(gdb) info functions 
+All defined functions:
+
+Non-debugging symbols:
+0x08048080  HelloWorldProc
+0x08048097  _start
+0x0804809c  PrintHelloWorld
+0xb7fff400  __kernel_sigreturn
+0xb7fff40c  __kernel_rt_sigreturn
+0xb7fff414  __kernel_vsyscall
+(gdb) disassemble 0x08048080 
+Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+(gdb) nexti
+0x0804809c in PrintHelloWorld ()
+(gdb) disassemble 
+Dump of assembler code for function PrintHelloWorld:
+=> 0x0804809c <+0>:	push   ecx
+   0x0804809d <+1>:	call   0x8048080 <HelloWorldProc>
+   0x080480a2 <+6>:	pop    ecx
+   0x080480a3 <+7>:	loop   0x804809c <PrintHelloWorld>
+   0x080480a5 <+9>:	mov    eax,0x1
+   0x080480aa <+14>:	mov    ebx,0xa
+   0x080480af <+19>:	int    0x80
+End of assembler dump.
+(gdb) define hook-stop
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>disassemble 
+>end
+(gdb) nexti
+Dump of assembler code for function PrintHelloWorld:
+   0x0804809c <+0>:	push   ecx
+=> 0x0804809d <+1>:	call   0x8048080 <HelloWorldProc>
+   0x080480a2 <+6>:	pop    ecx
+   0x080480a3 <+7>:	loop   0x804809c <PrintHelloWorld>
+   0x080480a5 <+9>:	mov    eax,0x1
+   0x080480aa <+14>:	mov    ebx,0xa
+   0x080480af <+19>:	int    0x80
+End of assembler dump.
+0x0804809d in PrintHelloWorld ()
+(gdb) x/xw $esp
+0xbffff70c:	0x00000010
+(gdb) nexti
+Dump of assembler code for function HelloWorldProc:
+=> 0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+0x08048080 in HelloWorldProc ()
+(gdb) x/xw $esp
+0xbffff708:	0x080480a2
+(gdb) nexti
+Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+=> 0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+0x08048085 in HelloWorldProc ()
+(gdb) 
+Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+=> 0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+0x0804808a in HelloWorldProc ()
+(gdb) 
+Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+=> 0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+0x0804808f in HelloWorldProc ()
+(gdb) 
+Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+=> 0x08048094 <+20>:	int    0x80
+   0x08048096 <+22>:	ret    
+End of assembler dump.
+0x08048094 in HelloWorldProc ()
+(gdb) 
+Hello World!Dump of assembler code for function HelloWorldProc:
+   0x08048080 <+0>:	mov    eax,0x4
+   0x08048085 <+5>:	mov    ebx,0x1
+   0x0804808a <+10>:	mov    ecx,0x80490b4
+   0x0804808f <+15>:	mov    edx,0xc
+   0x08048094 <+20>:	int    0x80
+=> 0x08048096 <+22>:	ret    
+End of assembler dump.
+0x08048096 in HelloWorldProc ()
+(gdb) x/2xw $esp
+0xbffff708:	0x080480a2	0x00000010
+(gdb) nexti
+Dump of assembler code for function PrintHelloWorld:
+   0x0804809c <+0>:	push   ecx
+   0x0804809d <+1>:	call   0x8048080 <HelloWorldProc>
+=> 0x080480a2 <+6>:	pop    ecx
+   0x080480a3 <+7>:	loop   0x804809c <PrintHelloWorld>
+   0x080480a5 <+9>:	mov    eax,0x1
+   0x080480aa <+14>:	mov    ebx,0xa
+   0x080480af <+19>:	int    0x80
+End of assembler dump.
+0x080480a2 in PrintHelloWorld ()
+(gdb) x/xw $esp
+0xbffff70c:	0x00000010
+(gdb) c
+Continuing.
+Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello World![Inferior 1 (process 7936) exited with code 012]
+Error while running hook_stop:
+No frame selected.
+(gdb) quit
+
+Video 19:
