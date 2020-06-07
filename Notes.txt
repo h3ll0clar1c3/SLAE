@@ -3699,3 +3699,619 @@ Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!Hello Wo
 
 Strings:
 
+MOVS (MOVS/MOVSW/MOVSD)
+CMPS - Compares
+SCAS - Subtracts
+LODS - Loads
+
+vim Strings.nasm
+
+; Filename: Strings.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        ; copy a string from source to destination
+
+        mov ecx, sourceLen
+        lea esi, [source]
+        lea edi, [destination]
+
+
+        cld  ; clear direction flag
+        rep movsb
+
+        ; Print hello world using write syscall
+
+        mov eax, 0x4
+        mov ebx, 0x1
+        mov ecx, destination
+        mov edx, sourceLen
+        int 0x80
+
+        ; string comparison with cmpsb
+
+        ; compare source and destination
+        mov ecx, sourceLen
+        lea esi, [source]
+        lea edi, [destination]
+        repe cmpsb
+
+        jz SetEqual
+        mov ecx, result2
+        mov edx, result2Len
+        jmp Print
+
+SetEqual:
+        mov ecx, result1
+        mov edx, result1Len
+
+Print:
+        mov eax, 0x4
+        mov ebx, 0x1
+        int 0x80
+
+
+        mov eax, 1
+        mov ebx, 10             ; sys_exit syscall
+	int 0x80
+	
+section .data
+
+        source: db "Hello World!", 0xA
+        sourceLen equ $-source
+
+        comparison: db "Hello"
+
+        result1: db "Strings are Equal", 0xA
+        result1Len equ $-result1
+
+        result2: db "Strings are Unequal", 0xA
+        result2Len equ $-result2
+
+section .bss
+
+        destination: resb 100
+	
+./compile.sh Strings
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+gdb -q ./Strings
+Reading symbols from /SLAE x86/Strings/Strings...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) run 
+Starting program: /SLAE x86/Strings/Strings 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disassemble 
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+(gdb) define hook-stop 
+Type commands for definition of "hook-stop".
+End with a line saying just "end".
+>disassemble 
+>x/15cb &destination
+>end
+(gdb) nexti
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+=> 0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048085 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+=> 0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x0804808b in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+=> 0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048091 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	0 '\000'	0 '\000'	0 '\000'0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	0 '\000'	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	0 '\000'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	0 '\000'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	108 'l'	0 '\000'	0 '\000'	0 '\000'	0 '\000'0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	108 'l'	100 'd'	0 '\000'	0 '\000'	0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+=> 0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	108 'l'	100 'd'	33 '!'	0 '\000'	0 '\000'	0 '\000'
+0x08048092 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+=> 0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	108 'l'	100 'd'	33 '!'	10 '\n'	0 '\000'	0 '\000'
+0x08048094 in _start ()
+(gdb) 
+Dump of assembler code for function _start:
+   0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+=> 0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+0x8049128 <destination>:	72 'H'	101 'e'	108 'l'	108 'l'	111 'o'	32 ' '	87 'W'	111 'o'
+0x8049130 <destination+8>:	114 'r'	108 'l'	100 'd'	33 '!'	10 '\n'	0 '\000'	0 '\000'
+0x08048099 in _start ()
+(gdb) c
+Continuing.
+Hello World!
+Strings are Equal
+[Inferior 1 (process 16084) exited with code 012]
+Error while running hook_stop:
+No frame selected.
+(gdb) quit
+
+./Strings 
+Hello World!
+Strings are Equal
+gdb -q ./Strings
+Reading symbols from /SLAE x86/Strings/Strings...(no debugging symbols found)...done.
+(gdb) break _start
+Breakpoint 1 at 0x8048080
+(gdb) set disassembly-flavor intel
+(gdb) run
+Starting program: /SLAE x86/Strings/Strings 
+
+Breakpoint 1, 0x08048080 in _start ()
+(gdb) disas
+Dump of assembler code for function _start:
+=> 0x08048080 <+0>:	mov    ecx,0xd
+   0x08048085 <+5>:	lea    esi,ds:0x80490f0
+   0x0804808b <+11>:	lea    edi,ds:0x8049128
+   0x08048091 <+17>:	cld    
+   0x08048092 <+18>:	rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+   0x08048094 <+20>:	mov    eax,0x4
+   0x08048099 <+25>:	mov    ebx,0x1
+   0x0804809e <+30>:	mov    ecx,0x8049128
+   0x080480a3 <+35>:	mov    edx,0xd
+   0x080480a8 <+40>:	int    0x80
+   0x080480aa <+42>:	mov    ecx,0xd
+   0x080480af <+47>:	lea    esi,ds:0x80490f0
+   0x080480b5 <+53>:	lea    edi,ds:0x8049128
+   0x080480bb <+59>:	repz cmps BYTE PTR ds:[esi],BYTE PTR es:[edi]
+   0x080480bd <+61>:	je     0x80480cb <SetEqual>
+   0x080480bf <+63>:	mov    ecx,0x8049114
+   0x080480c4 <+68>:	mov    edx,0x14
+   0x080480c9 <+73>:	jmp    0x80480d5 <Print>
+End of assembler dump.
+(gdb) break *0x080480bd
+Breakpoint 2 at 0x80480bd
+(gdb) c
+Continuing.
+Hello World!
+
+Breakpoint 2, 0x080480bd in _start ()
+(gdb) print $eflags
+$1 = [ PF ZF IF ]
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 16949] will be killed.
+
+Quit anyway? (y or n) y
+
+Libc and NASM:
+
+
+
