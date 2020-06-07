@@ -4313,5 +4313,161 @@ Quit anyway? (y or n) y
 
 Libc and NASM:
 
+* Define all functions you want to use with extern
+* All arguments in reverse order on stack
+ - CALL function(a,b,c,d)
+ - push d, push c, push b, push a
+* Adjust the stack after calling libc functions
+* Link with GCC rather then LD - use 'main' instead of '_start'
+
+vim Libc.nasm
+
+; Filename: Libc.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+extern printf
+extern exit
+
+global main
+
+section .text
+main:
+
+        push message
+        call printf
+        add esp, 0x4  ; adjust the stack
+
+        mov eax, 0xa
+        call exit
+
+
+
+section .data
+
+        message: db "Hello World!", 0xA, 0x00
+        mlen     equ $-message
+
+cat compile.sh 
+#!/bin/bash
+
+echo '[+] Assembling with Nasm ... '
+nasm -f elf32 -o $1.o $1.nasm
+
+echo '[+] Linking ...'
+gcc -o $1 $1.o
+
+echo '[+] Done!'
+
+./compile.sh Libc
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+./Libc 
+Hello World!
+
+gdb -q ./Libc
+Reading symbols from /SLAE x86/Libc/Libc...(no debugging symbols found)...done.
+(gdb) set disassembly-flavor intel
+(gdb) break main
+Breakpoint 1 at 0x8048420
+(gdb) run
+Starting program: /SLAE x86/Libc/Libc 
+
+Breakpoint 1, 0x08048420 in main ()
+(gdb) disassemble 
+Dump of assembler code for function main:
+=> 0x08048420 <+0>:	push   0x804a018
+   0x08048425 <+5>:	call   0x8048320 <printf@plt>
+   0x0804842a <+10>:	add    esp,0x4
+   0x0804842d <+13>:	mov    eax,0xa
+   0x08048432 <+18>:	call   0x8048340 <exit@plt>
+   0x08048437 <+23>:	nop
+   0x08048438 <+24>:	nop
+   0x08048439 <+25>:	nop
+   0x0804843a <+26>:	nop
+   0x0804843b <+27>:	nop
+   0x0804843c <+28>:	nop
+   0x0804843d <+29>:	nop
+   0x0804843e <+30>:	nop
+   0x0804843f <+31>:	nop
+End of assembler dump.
+(gdb) x/xw $esp
+0xbffff68c:	0xb7e394e3
+(gdb) stepi
+0x08048425 in main ()
+(gdb) x/xw $esp
+0xbffff688:	0x0804a018
+(gdb) x/s $esp
+0xbffff688:	 "\030\240\004\b\343\224\343\267\001"
+(gdb) x/s 0x0804a018 
+0x804a018 <message>:	 "Hello World!\n"
+(gdb) disassemble 
+Dump of assembler code for function main:
+   0x08048420 <+0>:	push   0x804a018
+=> 0x08048425 <+5>:	call   0x8048320 <printf@plt>
+   0x0804842a <+10>:	add    esp,0x4
+   0x0804842d <+13>:	mov    eax,0xa
+   0x08048432 <+18>:	call   0x8048340 <exit@plt>
+   0x08048437 <+23>:	nop
+   0x08048438 <+24>:	nop
+   0x08048439 <+25>:	nop
+   0x0804843a <+26>:	nop
+   0x0804843b <+27>:	nop
+   0x0804843c <+28>:	nop
+   0x0804843d <+29>:	nop
+   0x0804843e <+30>:	nop
+   0x0804843f <+31>:	nop
+End of assembler dump.
+(gdb) x/xw $esp
+0xbffff688:	0x0804a018
+(gdb) stepi
+0x08048320 in printf@plt ()     
+(gdb) disassemble 
+Dump of assembler code for function printf@plt:
+=> 0x08048320 <+0>:	jmp    DWORD PTR ds:0x804a000
+   0x08048326 <+6>:	push   0x0
+   0x0804832b <+11>:	jmp    0x8048310
+End of assembler dump.
+(gdb) break *0x0804842a
+Breakpoint 2 at 0x804842a
+(gdb) c
+Continuing.
+Hello World!
+
+Breakpoint 2, 0x0804842a in main ()
+(gdb) disassemble 
+Dump of assembler code for function main:
+   0x08048420 <+0>:	push   0x804a018
+   0x08048425 <+5>:	call   0x8048320 <printf@plt>
+=> 0x0804842a <+10>:	add    esp,0x4
+   0x0804842d <+13>:	mov    eax,0xa
+   0x08048432 <+18>:	call   0x8048340 <exit@plt>
+   0x08048437 <+23>:	nop
+   0x08048438 <+24>:	nop
+   0x08048439 <+25>:	nop
+   0x0804843a <+26>:	nop
+   0x0804843b <+27>:	nop
+   0x0804843c <+28>:	nop
+   0x0804843d <+29>:	nop
+   0x0804843e <+30>:	nop
+   0x0804843f <+31>:	nop
+End of assembler dump.
+(gdb) x/xw $esp
+0xbffff688:	0x0804a018
+(gdb) stepi
+0x0804842d in main ()
+(gdb) x/xw $esp
+0xbffff68c:	0xb7e394e3
+(gdb) c
+Continuing.
+[Inferior 1 (process 21437) exited with code 0343]
+(gdb) quit
+
+Shellcoding Basics:
 
 
