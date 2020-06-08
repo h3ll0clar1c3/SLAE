@@ -4610,5 +4610,122 @@ Quit anyway? (y or n) y
 
 Exit Shellcode:
 
+; Filename: exit.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
 
+global _start
+
+section .text
+_start:
+
+        mov eax, 1
+        mov ebx, 10
+        int 0x80
+
+./compile.sh exit
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+
+cp exit.nasm exit-no-null.nasm (Remove nullbytes from code)
+
+vim exit-no-null.nasm
+
+; Filename: exit.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        xor eax, eax
+        mov al, 1
+        xor ebx, ebx
+        int 0x80
+	
+./compile.sh exit-no-null
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+objdump -d exit-no-null -M intel
+
+exit-no-null:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+08048060 <_start>:
+ 8048060:	31 c0                	xor    eax,eax
+ 8048062:	b0 01                	mov    al,0x1
+ 8048064:	31 db                	xor    ebx,ebx
+ 8048066:	cd 80                	int    0x80
+ 
+ https://www.commandlinefu.com/commands/view/6051/get-all-shellcode-on-binary-file-from-objdump
+ 
+ objdump -d ./exit-no-null|grep '[0-9a-f]:'|grep -v 'file'|cut -f2 -d:|cut -f1-6 -d' '|tr -s ' '|tr '\t' ' '|sed 's/ $//g'|sed 's/ /\\x/g'|paste -d '' -s |sed 's/^/"/'|sed 's/$/"/g'
+"\x31\xc0\xb0\x01\x31\xdb\xcd\x80"
+
+vim shellcode.c
+
+#include<stdio.h>
+#include<string.h>
+
+unsigned char code[] = \
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69"
+"\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80";
+
+main()
+{
+
+        printf("Shellcode Length:  %d\n", strlen(code));
+
+        int (*ret)() = (int(*)())code;
+
+        ret();
+
+}
+
+gcc -fno-stack-protector -z execstack shellcode.c -o shellcode
+./shellcode 
+Shellcode Length:  10
+
+echo $?
+10
+
+vim exit.nasm
+
+; Filename: exit.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        mov eax, 1
+        mov ebx, 10
+        int 0x80
+
+./compile.sh exit-no-null
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+objdump -d ./exit-no-null|grep '[0-9a-f]:'|grep -v 'file'|cut -f2 -d:|cut -f1-6 -d' '|tr -s ' '|tr '\t' ' '|sed 's/ $//g'|sed 's/ /\\x/g'|paste -d '' -s |sed 's/^/"/'|sed 's/$/"/g'
+"\x31\xc0\xb0\x01\x31\xdb\xcd\x80"
 
