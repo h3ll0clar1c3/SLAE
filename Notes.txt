@@ -4729,3 +4729,79 @@ _start:
 objdump -d ./exit-no-null|grep '[0-9a-f]:'|grep -v 'file'|cut -f2 -d:|cut -f1-6 -d' '|tr -s ' '|tr '\t' ' '|sed 's/ $//g'|sed 's/ /\\x/g'|paste -d '' -s |sed 's/^/"/'|sed 's/$/"/g'
 "\x31\xc0\xb0\x01\x31\xdb\xcd\x80"
 
+HelloWorld Shellcode using JMP-CALL-POP:
+
+vim HelloWorld Shellcode.nasm
+
+; HelloWorldShellcode.asm
+; Author: Vivek Ramachandran
+
+
+
+global _start
+
+section .text
+
+_start:
+
+        jmp short call_shellcode
+
+
+shellcode:
+
+        ; print hello world on the screen
+
+        xor eax, eax
+        mov al, 0x4
+
+        xor ebx, ebx
+        mov bl, 0x1
+
+        pop ecx
+
+        xor edx, edx
+        mov dl, 13
+
+        int 0x80
+
+
+        ; exit the program gracefully
+
+        xor eax, eax
+        mov al, 0x1
+
+        xor ebx, ebx
+
+        int 0x80
+
+call_shellcode:
+
+        call shellcode
+        message: db "Hello World!", 0xA
+	
+./compile.sh HelloWorldShellcode
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+./HelloWorldShellcode
+Hello World!
+
+vim shellcode.c
+
+#include<stdio.h>
+#include<string.h>
+
+unsigned char code[] = \
+"\x31\xc0\xb0\x04\x31\xdb\xb3\x01\x31\xd2\x52\x68\x72\x6c\x64\x0a\x68\x6f\x20\x57\x6f\x68\x48\x65\x6c\x6c\x89\xe1\xb2\x0c\xcd\x80\x31\xc0\xb0\x01\x31\xdb\xcd\x80";
+
+main()
+{
+
+        printf("Shellcode Length:  %d\n", strlen(code));
+
+        int (*ret)() = (int(*)())code;
+
+        ret();
+
+}
+
