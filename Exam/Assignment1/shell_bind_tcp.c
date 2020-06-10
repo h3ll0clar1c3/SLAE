@@ -3,8 +3,8 @@
 #include <sys/socket.h>  
 #include <netinet/in.h>  
   
-int host_sockid;    // sockfd for host  
-int client_sockid;  // sockfd for client  
+int host_sockid;    // socket for host  
+int client_sockid;  // socket for client  
       
 struct sockaddr_in hostaddr;  // sockaddr struct  
   
@@ -24,7 +24,7 @@ int main()
     // Listen for incoming connections  
     listen(host_sockid, 2);  
   
-    // Accept incoming connection, don't store data, just use the sockfd created  
+    // Accept incoming connection using the socket created  
     client_sockid = accept(host_sockid, NULL, NULL);  
   
     // Duplicate file descriptors for STDIN, STDOUT and STDERR  
