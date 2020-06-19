@@ -18,7 +18,7 @@ section .text
         xor esi, esi
 
         ; push socket values onto the stack
-        push esi        ; push 0 onto the stack
+        push esi        ; push 0 onto the stack, default protocol
         push 0x1        ; push 1 onto the stack, SOCK_STREAM
         push 0x2        ; push 2 onto the stack, AF_INET
 	
@@ -51,7 +51,6 @@ section .text
         int 0x80        ; call the interrupt to execute the listen syscall
 
         ; 4th syscall - accept incoming connections
-
         push esi        ; NULL
         push esi        ; NULL
         push edx        ; pointer to sockfd
