@@ -4,7 +4,7 @@
 * Purpose: Bind shellcode on TCP port 5555, spawn a shell on incoming connection  
 * Compilation: gcc -fno-stack-protector -z execstack -m32 shellcode.c -o shell_bind_tcp_final  
 * Usage: ./shell_bind_tcp_final
-* Testing: nc 127.0.0.1 5555
+* Testing: nc -nv 127.0.0.1 5555
 * Shellcode size: 105 bytes
 * Architecture: x86
 **/
