@@ -22,10 +22,6 @@ if port < 0 or port > 65535:
     print "Invalid port number, must be between 0 and 65535!"
     exit()
 
-#if (len(sys.argv) < 2):
-#    print "Usage: python {name} <port>".format(name = sys.argv[0])
-#    exit()
- 
 port = hex(socket.htons(int(sys.argv[1])))
 shellcode = shellcode.replace("\\x11\\x5c", "\\x{b1}\\x{b2}".format(b1 = port[4:6], b2 = port[2:4]))
 
