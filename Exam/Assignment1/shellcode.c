@@ -1,7 +1,7 @@
 /**
 * Filename: shellcode.c
 * Author: h3ll0clar1c3
-* Purpose: Bind shellcode on TCP port 5555, spawn a shell on incoming connection  
+* Purpose: Bind shell on TCP port 5555, spawn a shell on incoming connection  
 * Compilation: gcc -fno-stack-protector -z execstack -m32 shellcode.c -o shell_bind_tcp_final  
 * Usage: ./shell_bind_tcp_final
 * Testing: nc -nv 127.0.0.1 5555
