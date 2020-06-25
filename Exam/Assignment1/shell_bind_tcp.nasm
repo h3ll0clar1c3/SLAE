@@ -1,6 +1,6 @@
 ; Filename: shell_bind_tcp.nasm
 ; Author: h3ll0clar1c3
-; Purpose: Bbind shellcode on TCP port 4444, spawn a shell on incoming connection
+; Purpose: Bind shell on TCP port 4444, spawn a shell on incoming connection
 ; Compilation: ./compile.sh shell_bind_tcp
 ; Usage: ./shell_bind_tcp
 ; Testing: nc -nv 127.0.0.1 4444
